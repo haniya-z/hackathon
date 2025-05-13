@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+  <!DOCTYPE html>
+<html lang="en" x-data="expenseApp()" class="bg-gray-100 text-gray-800">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Expense Tracker & Bill Splitter</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/alpinejs" defer></script>
+</head>
+<body class="p-6">
+  <div class="max-w-2xl mx-auto bg-white p-6 rounded-2xl shadow-md space-y-6">
+    <h1 class="text-3xl font-bold text-center">Expense Tracker & Bill Splitter</h1>
+
+    <!-- People Section -->
+    <div>
+      <h2 class="text-xl font-semibold mb-2">Add People</h2>
+      <template x-for="(person, index) in people" :key="index">
+        <div class="flex mb-2 gap-2">
+          <input type="text" x-model="people[index]" class="flex-1 border p-2 rounded" placeholder="Name" />
+          <button @click="removePerson(index)" class="text-red-500 font-bold">X</button>
+        </div>
+      </template>
+      <button @click="addPerson()" class="bg-blue-600 text-white px-4 py-2 rounded">+ Add Person</button>
+    </div>
+
+    <!-- Expense Section -->
+    <div>
+      <h2 class="text-xl font-semibold mb-2">Add Expense</h2>
+      <input type="text" x-model="expense.description" placeholder="Description" class="w-full p-2 mb-2 border rounded" />
+      <input type="number" x-model.number="expense.amount" placeholder="Amount" class="w-full p-2 mb-2 border rounded" />
+      <select x-model="expense.payer" class="w-full p-2 mb-2 border rounded">
+        <option disabled selected value="">Paid by...</option>
+        <template x-for="(person, index) in people" :key="index">
+          <option :value="person" x-text="person"></option>
+        </template>
+      </select>
+      <button @click="addExpense()" class="bg-green-600 text-white px-4 py-2 rounded w-full">+ Add Expense</button>
+    </div>
+
+    <!-- Expenses List -->
+    <div>
+      <h2 class="text-xl font-semibold mb-2">Expenses</h2>
+      <template x-for="(e, index) in expenses" :key="index">
+        <div class="border p-2 mb-2 rounded bg-gray-50">
+          <p><strong x-text="e.payer"></strong> paid <strong>${{ e.amount.toFixed(2) }}</strong> for "<span x-text="e.description"></span>"</p>
+        </div>
+      </template>
+    </div>
+
+    <!-- Summary -->
+    <div>
+      <h2 class="text-xl font-semibold mb-2">Summary</h2>
+      <p class="font-medium mb-2">Total: $<span x-text="total.toFixed(2)"></span></p>
+      <template x-for="(person, index) in people" :key="index">
+        <p>
+          <strong x-text="person"></strong>:
+          <span x-text="getBalance(person).toFixed(2)"></span>
+          <span x-text="getBalance(person) > 0 ? '(gets back)' : getBalance(person) < 0 ? '(owes)' : ''"></span>
+        </p>
+      </template>
+    </div>
+  </div>
+
+  <!-- Alpine.js Logic -->
+  <script>
+    function expenseApp() {
+      return {
+        people: [],
+        expenses: [],
+        expense: { description: '', amount: 0, payer: '' },
+
+        addPerson() {
+          this.people.push('');
+        },
+        removePerson(index) {
+          this.people.splice(index, 1);
+        },
+        addExpense() {
+          if (this.expense.description && this.expense.amount > 0 && this.expense.payer) {
+            this.expenses.push({ ...this.expense });
+            this.expense = { description: '', amount: 0, payer: '' };
+          }
+        },
+        get total() {
+          return this.expenses.reduce((sum, e) => sum + e.amount, 0);
+        },
+        getBalance(person) {
+          const paid = this.expenses
+            .filter((e) => e.payer === person)
+            .reduce((sum, e) => sum + e.amount, 0);
+          const share = this.total / this.people.length || 0;
+          return paid - share;
+        }
+      };
+    }
+  </script>
+</body>
+</html>
+
+        
+</body>
+</html>
